@@ -10,7 +10,7 @@ prepare_frr7() {
 			mount -t devfs devfs ${path}/dev && {
 				mkdir ${path}/var/cache/pkg
 				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
-					pkg -c $path install -qy frr7 {
+					pkg -c $path install -qy frr7 && {
 						sysrc -R $path cron_enable=NO
 						sysrc -R $path sendmail_enable=NONE
 						sysrc -R $path syslogd_enable=NO
