@@ -1,0 +1,40 @@
+#!/bin/sh
+
+error=1
+trap 'error=255' INT
+
+#ver="auto"
+ver="13.0-RELEASE"
+
+check_kernel_version() {
+	if [ "$ver" = "auto" ]; then
+		local rver=$( freebsd-version -r )
+		ver="${rver%-p*}"
+	fi
+}
+
+check_kernel_version
+
+
+prepare_baseos() {
+	local path=$1
+	local kind="releases"
+	local typever="${ver#*-}"
+	if [ "$typever" = "STABLE" -o "$typever" = "CURRENT" ]; then
+		kind="snapshots"
+	fi
+	local base_url="https://download.freebsd.org/ftp/$kind/`uname -m`/`uname -p`/$ver/base.txz"
+
+	[ -d "$path" ] && {
+		fetch -qo - "$base_url" | tar -xf - -C "$path" && {
+			# FIXME for shell /bin/sh, pipe dst does not inherent errno from src
+			error=0
+		}
+	}
+}
+
+prepare_baseos $1
+
+[ "$error" -eq 1 ] && echo "Error fetch and install base os, abort!"
+
+exit "$error"

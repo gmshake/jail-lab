@@ -1,0 +1,112 @@
+#!/bin/sh
+
+. ../templates/template.subr
+
+
+prepare_jail() {
+	local name=$1
+	local template=$2
+	local path="$jail_base_path/$name"
+
+	[ -d "$path" ] || {
+		zfs list -t snap ${jail_pool}${jail_base_templates_path}/${template}@p0 > /dev/null || {
+			echo "No template found, please prepare template ${jail_pool}${jail_base_templates_path}/${template}@p0 first, abort!"
+			exit 1
+		}
+		zfs clone ${jail_pool}${jail_base_templates_path}/${template}@p0 ${jail_pool}${path} || {
+			echo "Error prepare jail $name, abort!"
+			exit 1
+		}
+		zfs snap ${jail_pool}${path}@p0
+	}
+}
+
+clean_jail() {
+	local name=$1
+	local path="$jail_base_path/$name"
+
+	[ -d "$path" ] && zfs destroy -r ${jail_pool}${path}
+}
+
+create_jail() {
+	local name=$1
+	local downlinks=$2
+	local uplinks=$3
+	local maxports=$4
+	local path="$jail_base_path/$name"
+	local exec_created="\"mount -t nullfs $PWD/conf/$name $path/usr/local/etc/frr\""
+	local exec_start=""
+	local vnet_interface=""
+
+	local i=0
+	for downlink in $downlinks
+	do
+		vnet_interface="$vnet_interface vnet.interface=\"${name}.${downlink}\""
+		exec_start="$exec_start exec.start=\"ifconfig ${name}.${downlink} name en$i up\""
+		i=$(($i+1))
+	done
+
+	local uplink_count=0
+	for uplink in $uplinks
+	do
+		uplink_count=$(($uplink_count+1))
+	done
+
+	if [ $uplink_count -gt 0 ]; then
+		local j=$(($maxports-$uplink_count))
+		if [ $j -le $i ]; then
+			echo "Current maxports [$maxports] is too small, please increase maxports, abort."
+			exit 1
+		fi
+
+		for uplink in $uplinks
+		do
+			vnet_interface="$vnet_interface vnet.interface=\"${name}.${uplink}\""
+			exec_start="$exec_start exec.start=\"ifconfig ${name}.${uplink} name en$j up\""
+			j=$(($j+1))
+		done
+	fi
+
+	exec_start="$exec_start exec.start=\"/bin/sh /etc/rc\""
+	#jail -c name=$name path=$path exec.created=$exec_created host.hostname=$name mount.devfs vnet persist $vnet_interface $exec_start
+	sh -c "jail -c name=$name path=$path exec.created=$exec_created host.hostname=$name mount.devfs vnet persist $vnet_interface $exec_start"
+}
+
+destroy_jail() {
+	local name=$1
+	local downlinks=$2
+	local uplinks=$3
+	local maxports=$4
+	local path="$jail_base_path/$name"
+	local exec_stop="/bin/sh /etc/rc.shutdown jail"
+
+	jls -j $name > /dev/null 2>&1 && {
+		jexec $name $exec_stop
+
+		local i=0
+		for downlink in $downlinks
+		do
+			jexec $name ifconfig en$i name ${name}.${downlink} down
+			i=$(($i+1))
+		done
+
+		local uplink_count=0
+		for uplink in $uplinks
+		do
+			uplink_count=$(($uplink_count+1))
+		done
+		if [ $uplink_count -gt 0 ]; then
+			local j=$(($maxports-$uplink_count))
+			for uplink in $uplinks
+			do
+				jexec $name ifconfig en$j name ${name}.${uplink} down
+				j=$(($j+1))
+			done
+		fi
+
+		jail -r $name
+		umount -t nullfs $path/usr/local/etc/frr
+		umount -t devfs $path/dev
+	}
+}
+

@@ -1,0 +1,64 @@
+#!/bin/sh
+
+jail_pool="zroot"
+jail_base_path="/jails"
+jail_base_templates_path="$jail_base_path/templates"
+
+prepare_template_dataset() {
+
+	zfs list ${jail_pool}${jail_base_path} > /dev/null 2>&1 || {
+		zfs create -o mountpoint=$jail_base_path ${jail_pool}${jail_base_path} || {
+			echo "Error create zfs dataset ${jail_pool}${jail_base_path}, abort!"
+			exit 1
+		}
+	}
+
+	zfs list ${jail_pool}${jail_base_templates_path} > /dev/null 2>&1 || {
+		zfs create ${jail_pool}${jail_base_templates_path} || {
+			echo "Error create zfs dataset ${jail_pool}${jail_base_templates_path}, abort!"
+			exit 1
+		}
+	}
+}
+
+create_template() {
+	local callback=$1
+	local name=$2
+	local base=$3
+	local path="$jail_base_templates_path/$name"
+
+	if [ ! -f "$callback" -o ! -x "$callback" ]; then
+		echo "No executable callback $callback found!"
+		exit 1
+	fi
+
+	[ -d "$path" ] || {
+		prepare_template_dataset
+		if [ -n "$base" ]; then
+			zfs list -t snap ${jail_pool}${jail_base_templates_path}/${base}@p0 > /dev/null || {
+				echo "No base template found, please prepare base template ${jail_pool}${jail_base_templates_path}/${base} first, abort!"
+				exit 1
+			}
+			zfs clone ${jail_pool}${jail_base_templates_path}/${base}@p0 ${jail_pool}${path}
+		else
+			zfs create ${jail_pool}${path} || {
+				echo "Error create zfs dataset ${jail_pool}${path}, abort!"
+				exit 1
+			}
+		fi
+
+		./"$callback" "$path" && zfs snap ${jail_pool}${path}@p0 || zfs destroy ${jail_pool}${path}
+	}
+}
+
+destroy_template() {
+	local name=$1
+	local path="$jail_base_templates_path/$name"
+	
+	if [ zfs list ${jail_pool}${path} ]; then
+		zfs destroy -r ${jail_pool}${path} || {
+			echo "Error destroy zfs dataset ${jail_pool}${path}, abort!"
+			exit 1
+		}
+	fi
+}
