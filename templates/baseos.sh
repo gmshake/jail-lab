@@ -2,4 +2,4 @@
 
 . template.subr
 
-create_template baseos.cb FreeBSD-12.0-RELEASE
+create_template baseos.cb FreeBSD-13.0-RELEASE
