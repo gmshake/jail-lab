@@ -3,7 +3,7 @@
 error=1
 trap 'error=255' INT
 
-prepare_isc-dhcp44-server() {
+prepare_isc_dhcp44_server() {
 	local path=$1
 	[ -d "$path" ] && {
 		cp /etc/resolv.conf ${path}/etc && {
@@ -11,9 +11,6 @@ prepare_isc-dhcp44-server() {
 				mkdir ${path}/var/cache/pkg
 				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
 					pkg -c $path install -qy isc-dhcp44-server && {
-						sysrc -R $path cron_enable=NO
-						sysrc -R $path sendmail_enable=NONE
-						sysrc -R $path syslogd_enable=NO
 						sysrc -R $path dhcpd_enable=YES
 						sysrc -R $path dhcpd_flags="-q"
 						sysrc -R $path dhcpd_conf="/usr/local/etc/dhcpd.conf"
@@ -31,6 +28,6 @@ prepare_isc-dhcp44-server() {
 	}
 }
 
-prepare_isc-dhcp44-server $1
+prepare_isc_dhcp44_server $1
 
 exit "$error"
