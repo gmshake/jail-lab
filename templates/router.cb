@@ -1,0 +1,22 @@
+#!/bin/sh
+
+error=1
+trap 'error=255' INT
+
+prepare_router() {
+	local path=$1
+
+	[ -d "$path" ] && {
+		sysrc -R $path cron_enable=NO
+		sysrc -R $path sendmail_enable=NONE
+		sysrc -R $path syslogd_flags="-ss"
+		sysrc -R $path gateway_enable=YES
+		sysrc -R $path ipv6_gateway_enable=YES
+		sysrc -R $path ipv6_activate_all_interfaces=YES
+		error=0
+	}
+}
+
+prepare_router $1
+
+exit "$error"
