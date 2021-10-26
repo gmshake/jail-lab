@@ -11,9 +11,6 @@ prepare_freeradius3() {
 				mkdir ${path}/var/cache/pkg
 				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
 					pkg -c $path install -qy freeradius3 && {
-						sysrc -R $path cron_enable=NO
-						sysrc -R $path sendmail_enable=NONE
-						sysrc -R $path syslogd_enable=NO
 						sysrc -R $path radiusd_enable=YES
 						error=0
 					}
