@@ -11,21 +11,7 @@ prepare_dial_edge() {
 				mkdir ${path}/var/cache/pkg
 				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
 					pkg -c $path install -qy frr7 && {
-						sysrc -R $path cron_enable=NO
-						sysrc -R $path sendmail_enable=NONE
-						sysrc -R $path syslogd_enable=NO
-						sysrc -R $path gateway_enable=YES
-						sysrc -R $path ipv6_gateway_enable=YES
-						sysrc -R $path ipv6_activate_all_interfaces=YES
-						sysrc -R $path pf_enable=YES
 						sysrc -R $path ppp_enable=YES
-						sysrc -R $path frr_enable=YES
-						sysrc -R $path frr_vtysh_boot=YES
-						sysrc -R $path frr_daemons="zebra bgpd staticd"
-						sysrc -R $path frr_flags="-P0"
-						touch ${path}/etc/pf.conf
-						touch ${path}/usr/local/etc/frr/vtysh.conf
-						touch ${path}/usr/local/etc/frr/frr.conf
 						error=0
 					}
 					umount ${path}/var/cache/pkg
