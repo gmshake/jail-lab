@@ -1,0 +1,18 @@
+#!/bin/sh
+
+error=1
+trap 'error=255' INT
+
+prepare_pf() {
+	local path=$1
+
+	[ -d "$path" ] && {
+		sysrc -R $path pf_enable=YES
+		touch ${path}/etc/pf.conf
+		error=0
+	}
+}
+
+prepare_pf $1
+
+exit "$error"
