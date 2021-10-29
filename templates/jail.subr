@@ -110,3 +110,113 @@ destroy_jail() {
 	}
 }
 
+
+backup_jail() {
+	local name="$1"
+	local backup_path="$2"
+	local jail_path="${jail_base_path}/${name}"
+	local jl="${#jail_path}"
+	jl=$((jl+1))
+
+	if [ -z "$name" ]; then
+		echo "Jail name required, abort!"
+		exit 1
+	fi
+	if [ ! -d "$jail_path" ]; then
+		echo "Jail $name does not exist, abort!"
+		exit 1
+	fi
+	if [ -z "$backup_path" ]; then
+		echo "Backup path required, abort!"
+		exit 1
+	fi
+	if [ ! -e "$backup_path" ]; then
+		echo "Backup path does not exist, abort!"
+		exit 1
+	fi
+	if [ ! -d "$backup_path" ]; then
+		echo "Backup path $backup_path is not a directory, abort!"
+		exit 1
+	else
+		if [ "$(ls -A $backup_path)" ]; then
+			echo "Backup path $backup_path is not empty, abort!"
+			exit 1
+		fi
+	fi
+
+	zfs diff ${jail_pool}${jail_path}@p0 | {
+		while IFS='	' read -r mode path
+		do
+			if [ "$mode" = "M" -o "$mode" = "+" ]; then
+				if [ -f "$path" -o -L "$path" ]; then
+					local basedir=$( dirname "$path" | cut -c "$jl"- )
+					local basename=$( basename "$path" )
+					if [ "$basename" = "DELETE_FILES" ]; then
+						echo "Ambiguous file ${path}, abort!"
+						exit 1;
+					fi
+					mkdir -p "${backup_path}${basedir}"
+					cp -p "$path" "${backup_path}${basedir}"
+				fi
+			else
+				if [ "$mode" = "-" ]; then
+					path=$( echo "$path" | cut -c "$jl"- )
+					echo "$path" >> "${backup_path}/DELETE_FILES"
+				else
+					echo "Unsupported mode $mode for $path, ignore"
+				fi
+			fi
+		done
+	}
+}
+
+
+restore_jail() {
+	local name="$1"
+	local backup_path="$2"
+	local jail_path="${jail_base_path}/${name}"
+	local bl="${#backup_path}"
+	bl=$((bl+1))
+
+	if [ -z "$name" ]; then
+		echo "Jail name required, abort!"
+		exit 1
+	fi
+	if [ ! -d "$jail_path" ]; then
+		echo "Jail $name does not exist, abort!"
+		exit 1
+	fi
+	if [ -z "$backup_path" ]; then
+		echo "Backup path required, abort!"
+		exit 1
+	fi
+	if [ ! -e "$backup_path" ]; then
+		echo "Backup path does not exist, abort!"
+		exit 1
+	fi
+	if [ ! -d "$backup_path" ]; then
+		echo "Backup path $backup_path is not a directory, abort!"
+		exit 1
+	fi
+
+	if [ -f "${backup_path}/DELETE_FILES" ]; then
+		cat "${backup_path}/DELETE_FILES" | sort -r | {
+			while IFS= read -r path
+			do
+				rm -d "${jail_path}${path}"
+			done
+		}
+	fi
+	find "$backup_path" -type f | {
+		while IFS= read -r path
+		do
+			if [ "$path" = "${backup_path}/DELETE_FILES" ]; then
+				continue;
+			fi
+			local basedir=$( dirname "$path" | cut -c "$bl"- )
+			mkdir -p "${jail_path}${basedir}"
+			cp -p "$path" "${jail_path}${basedir}"
+		done
+	}
+}
+
