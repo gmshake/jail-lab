@@ -131,8 +131,11 @@ backup_jail() {
 		exit 1
 	fi
 	if [ ! -e "$backup_path" ]; then
-		echo "Backup path does not exist, abort!"
-		exit 1
+		echo "Backup path does not exist, try to create ${backup_path}"
+		mkdir -p "$backup_path" || {
+			echo "Error create ${backup_path}, abort!"
+			exit 1
+		}
 	fi
 	if [ ! -d "$backup_path" ]; then
 		echo "Backup path $backup_path is not a directory, abort!"
