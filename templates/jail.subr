@@ -161,20 +161,43 @@ backup_jail() {
 	zfs diff ${jail_pool}${jail_path}@p0 | {
 		while IFS='	' read -r mode path
 		do
+			local basepath=$( echo "$path" | cut -c "$jl"- )
+			local basedir=$( dirname "$basepath" )
+			local basename=$( basename "$basepath" )
+
+			# exclude /tmp /var/run /var/tmp *.pid files
+			if [ "${#basepath}" -ge 4 ]; then
+				echo "$basepath" | grep -Eq '^/tmp(/.*)?$' && {
+					echo "Ignore $basepath"
+					continue
+				}
+			fi
+			if [ "${#basepath}" -ge 8 ]; then
+				echo "$basepath" | grep -Eq '^/var/run(/.*)?$' && {
+					echo "Ignore $basepath"
+					continue
+				}
+				echo "$basepath" | grep -Eq '^/var/tmp(/.*)?$' && {
+					echo "Ignore $basepath"
+					continue
+				}
+			fi
+			if [ "${basename##*.}" = "pid" ]; then
+				echo "Ignore $basepath"
+				continue
+			fi
+
 			if [ "$mode" = "M" -o "$mode" = "+" ]; then
 				if [ -f "$path" -o -L "$path" ]; then
-					local basepath=$( echo "$path" | cut -c "$jl"- )
-					local basedir=$( dirname "$basepath" )
 					mkdir -p "${backup_path}/data${basedir}"
 					cp -p "$path" "${backup_path}/data${basedir}"
 					echo "$basepath" >> "${backup_path}/ADDED_FILES"
 				fi
 			else
 				if [ "$mode" = "-" ]; then
-					path=$( echo "$path" | cut -c "$jl"- )
-					echo "$path" >> "${backup_path}/DELETE_FILES"
+					echo "$basepath" >> "${backup_path}/DELETE_FILES"
 				else
-					echo "Unsupported mode $mode for $path, ignore"
+					echo "Unsupported mode $mode for $basepath, ignore"
 				fi
 			fi
 		done
