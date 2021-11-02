@@ -201,7 +201,11 @@ backup_jail() {
 				fi
 			fi
 		done
+
+		[ -f "${backup_path}/ADDED_FILES" ] && sort -o "${backup_path}/ADDED_FILES" "${backup_path}/ADDED_FILES"
+		[ -f "${backup_path}/DELETE_FILES" ] && sort -r -o "${backup_path}/DELETE_FILES" "${backup_path}/DELETE_FILES"
 	}
+	return 0
 }
 
 
@@ -249,5 +253,6 @@ restore_jail() {
 			done
 		}
 	fi
+	return 0
 }
 
