@@ -112,6 +112,11 @@ destroy_jail() {
 
 
 backup_jail() {
+	local force=0
+	if [ "$1" = "-f" ]; then
+		force=1
+		shift
+	fi
 	local name="$1"
 	local backup_path="$2"
 	local jail_path="${jail_base_path}/${name}"
@@ -141,9 +146,15 @@ backup_jail() {
 		echo "Backup path $backup_path is not a directory, abort!"
 		exit 1
 	else
-		if [ "$(ls -A $backup_path)" ]; then
-			echo "Backup path $backup_path is not empty, abort!"
-			exit 1
+		if [ -e "${backup_path}/DELETE_FILES" -o -e "${backup_path}/ADDED_FILES" ]; then
+			if [ "$force" -eq 1 ]; then
+				rm -rf "${backup_path}/data"
+				rm -f "${backup_path}/DELETE_FILES"
+				rm -f "${backup_path}/ADDED_FILES"
+			else
+				echo "Backup path $backup_path is not empty, abort!"
+				exit 1
+			fi
 		fi
 	fi
 
@@ -152,14 +163,11 @@ backup_jail() {
 		do
 			if [ "$mode" = "M" -o "$mode" = "+" ]; then
 				if [ -f "$path" -o -L "$path" ]; then
-					local basedir=$( dirname "$path" | cut -c "$jl"- )
-					local basename=$( basename "$path" )
-					if [ "$basename" = "DELETE_FILES" ]; then
-						echo "Ambiguous file ${path}, abort!"
-						exit 1;
-					fi
-					mkdir -p "${backup_path}${basedir}"
-					cp -p "$path" "${backup_path}${basedir}"
+					local basepath=$( echo "$path" | cut -c "$jl"- )
+					local basedir=$( dirname "$basepath" )
+					mkdir -p "${backup_path}/data${basedir}"
+					cp -p "$path" "${backup_path}/data${basedir}"
+					echo "$basepath" >> "${backup_path}/ADDED_FILES"
 				fi
 			else
 				if [ "$mode" = "-" ]; then
@@ -206,20 +214,19 @@ restore_jail() {
 		cat "${backup_path}/DELETE_FILES" | sort -r | {
 			while IFS= read -r path
 			do
-				rm -d "${jail_path}${path}"
+				rm -df "${jail_path}${path}"
 			done
 		}
 	fi
-	find "$backup_path" -type f | {
-		while IFS= read -r path
-		do
-			if [ "$path" = "${backup_path}/DELETE_FILES" ]; then
-				continue;
-			fi
-			local basedir=$( dirname "$path" | cut -c "$bl"- )
-			mkdir -p "${jail_path}${basedir}"
-			cp -p "$path" "${jail_path}${basedir}"
-		done
-	}
+	if [ -f "${backup_path}/ADDED_FILES" ]; then
+		cat "${backup_path}/ADDED_FILES" | sort | {
+			while IFS= read -r path
+			do
+				local basedir=$( dirname "$path" | cut -c "$bl"- )
+				mkdir -p "${jail_path}${basedir}"
+				cp -p "${backup_path}/data${path}" "${jail_path}${basedir}"
+			done
+		}
+	fi
 }
 
