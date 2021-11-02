@@ -8,17 +8,17 @@ prepare_jail() {
 	local template=$2
 	local path="$jail_base_path/$name"
 
-	[ -d "$path" ] || {
-		zfs list -t snap ${jail_pool}${jail_base_templates_path}/${template}@p0 > /dev/null || {
-			echo "No template found, please prepare template ${jail_pool}${jail_base_templates_path}/${template}@p0 first, abort!"
-			exit 1
-		}
-		zfs clone ${jail_pool}${jail_base_templates_path}/${template}@p0 ${jail_pool}${path} || {
-			echo "Error prepare jail $name, abort!"
-			exit 1
-		}
-		zfs snap ${jail_pool}${path}@p0
+	[ -d "$path" ] && exit 1
+
+	zfs list -t snap ${jail_pool}${jail_base_templates_path}/${template}@p0 > /dev/null || {
+		echo "No template found, please prepare template ${jail_pool}${jail_base_templates_path}/${template}@p0 first, abort!"
+		exit 1
 	}
+	zfs clone ${jail_pool}${jail_base_templates_path}/${template}@p0 ${jail_pool}${path} || {
+		echo "Error prepare jail $name, abort!"
+		exit 1
+	}
+	zfs snap ${jail_pool}${path}@p0
 }
 
 clean_jail() {
