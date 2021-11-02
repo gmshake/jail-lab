@@ -209,8 +209,6 @@ restore_jail() {
 	local name="$1"
 	local backup_path="$2"
 	local jail_path="${jail_base_path}/${name}"
-	local bl="${#backup_path}"
-	bl=$((bl+1))
 
 	if [ -z "$name" ]; then
 		echo "Jail name required, abort!"
@@ -245,7 +243,7 @@ restore_jail() {
 		cat "${backup_path}/ADDED_FILES" | sort | {
 			while IFS= read -r path
 			do
-				local basedir=$( dirname "$path" | cut -c "$bl"- )
+				local basedir=$( dirname "$path" )
 				mkdir -p "${jail_path}${basedir}"
 				cp -p "${backup_path}/data${path}" "${jail_path}${basedir}"
 			done
