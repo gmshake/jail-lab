@@ -9,6 +9,7 @@ usage() {
 	echo -e "Usage: $pgm [-h] [template1] [template2] ... [template n]"
 	echo -e "    Supported templates:"
 	echo -e "        baseos:\t\tFreeBSD-13.0-RELEASE"
+	echo -e "        host:\t\tFreeBSD-13.0-RELEASE-host"
 	echo -e "        router:\t\tFreeBSD-13.0-RELEASE-router"
 	echo -e "        firewall:\tFreeBSD-13.0-RELEASE-firewall (pf based)"
 	echo -e "        router-frr7:\tFreeBSD-13.0-RELEASE-router-frr7"
@@ -22,6 +23,11 @@ usage() {
 
 create_baseos() {
 	create_template baseos.cb ${baseos}
+}
+
+create_host() {
+	create_baseos
+	create_template host.cb ${baseos}-host ${baseos}
 }
 
 create_router() {
@@ -56,17 +62,17 @@ create_firewall_frr7_dial() {
 
 create_host_freeradius3() {
 	create_baseos
-	create_template freeradius3.cb ${baseos}-freeradius3 ${baseos}
+	create_template freeradius3.cb ${baseos}-freeradius3 ${baseos}-host
 }
 
 create_host_isc_dhcp44_server() {
 	create_baseos
-	create_template isc-dhcp44-server.cb ${baseos}-isc-dhcp44-server ${baseos}
+	create_template isc-dhcp44-server.cb ${baseos}-isc-dhcp44-server ${baseos}-host
 }
 
 create_host_unbound () {
 	create_baseos
-	create_template unbound.cb ${baseos}-unbound ${baseos}
+	create_template unbound.cb ${baseos}-unbound ${baseos}-host
 }
 
 if [ "$#" -eq 0 ]; then
@@ -79,6 +85,8 @@ for tp in "$@"
 do
 	case "$tp" in
 	baseos)
+		;;
+	host)
 		;;
 	router)
 		;;

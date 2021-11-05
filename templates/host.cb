@@ -1,0 +1,19 @@
+#!/bin/sh
+
+error=1
+trap 'error=255' INT
+
+prepare_host() {
+	local path=$1
+
+	[ -d "$path" ] && {
+		sysrc -R $path cron_enable=NO
+		sysrc -R $path sendmail_enable=NONE
+		sysrc -R $path syslogd_flags="-ss"
+		error=0
+	}
+}
+
+prepare_host $1
+
+exit "$error"
