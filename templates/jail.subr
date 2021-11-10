@@ -112,27 +112,18 @@ destroy_jail() {
 
 default_filter() {
 	local path="$1"
-	local basename=$( basename "$path" )
 
 	# exclude /tmp /var/run /var/tmp *.pid files
-	if [ "${#basepath}" -ge 4 ]; then
-		echo "$basepath" | grep -Eq '^/tmp(/.*)?$' && {
-			echo "Ignore $basepath"
-			return 1
-		}
+	if [ "${#path}" -ge 4 ]; then
+		echo "$path" | grep -Eq '^/tmp(/.*)?$' && return 1
 	fi
-	if [ "${#basepath}" -ge 8 ]; then
-		echo "$basepath" | grep -Eq '^/var/run(/.*)?$' && {
-			echo "Ignore $basepath"
-			return 1
-		}
-		echo "$basepath" | grep -Eq '^/var/tmp(/.*)?$' && {
-			echo "Ignore $basepath"
-			return 1
-		}
+	if [ "${#path}" -ge 8 ]; then
+		echo "$path" | grep -Eq '^/var/run(/.*)?$' && return 1
+		echo "$path" | grep -Eq '^/var/tmp(/.*)?$' && return 1
 	fi
+
+	local basename=$( basename "$path" )
 	if [ "${basename##*.}" = "pid" ]; then
-		echo "Ignore $basepath"
 		return 1
 	fi
 
