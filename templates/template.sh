@@ -16,6 +16,7 @@ usage() {
 	echo -e "        firewall-frr7:\tFreeBSD-13.0-RELEASE-firewall-frr7"
 	echo -e "        firewall-frr7-access:\tFreeBSD-13.0-RELEASE-firewall-frr7-access"
 	echo -e "        firewall-frr7-dial:\tFreeBSD-13.0-RELEASE-firewall-frr7-dial"
+	echo -e "        firewall-strongswan:\tFreeBSD-13.0-RELEASE-firewall-strongswan"
 	echo -e "        host-freeradius3:\tFreeBSD-13.0-RELEASE-freeradius3"
 	echo -e "        host-isc-dhcp44-server:\tFreeBSD-13.0-RELEASE-isc-dhcp44-server"
 	echo -e "        host-unbound:\tFreeBSD-13.0-RELEASE-unbound"
@@ -60,6 +61,11 @@ create_firewall_frr7_dial() {
 	create_template dial-edge.cb ${baseos}-firewall-frr7-dial ${baseos}-firewall-frr7
 }
 
+create_firewall_strongswan() {
+	create_firewall
+	create_template strongswan.cb ${baseos}-firewall-strongswan ${baseos}-firewall
+}
+
 create_host_freeradius3() {
 	create_baseos
 	create_template freeradius3.cb ${baseos}-freeradius3 ${baseos}-host
@@ -99,6 +105,8 @@ do
 	firewall-frr7-access)
 		;;
 	firewall-frr7-dial)
+		;;
+	firewall-strongswan)
 		;;
 	host-freeradius3)
 		;;
