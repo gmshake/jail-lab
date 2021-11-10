@@ -110,6 +110,50 @@ destroy_jail() {
 	}
 }
 
+default_filter() {
+	local path="$1"
+	local basename=$( basename "$path" )
+
+	# exclude /tmp /var/run /var/tmp *.pid files
+	if [ "${#basepath}" -ge 4 ]; then
+		echo "$basepath" | grep -Eq '^/tmp(/.*)?$' && {
+			echo "Ignore $basepath"
+			return 1
+		}
+	fi
+	if [ "${#basepath}" -ge 8 ]; then
+		echo "$basepath" | grep -Eq '^/var/run(/.*)?$' && {
+			echo "Ignore $basepath"
+			return 1
+		}
+		echo "$basepath" | grep -Eq '^/var/tmp(/.*)?$' && {
+			echo "Ignore $basepath"
+			return 1
+		}
+	fi
+	if [ "${basename##*.}" = "pid" ]; then
+		echo "Ignore $basepath"
+		return 1
+	fi
+
+	# do not filter out, pass
+	return 0
+}
+
+filter_backups() {
+	local path="$1"
+	shift
+	local filters="$@"
+	if [ -n "$filters" ]; then
+		for filter in $filters
+		do
+			# inclusive filter
+			./"$filter" "$path" && break
+		done
+	else
+		default_filter "$path"
+	fi
+}
 
 backup_jail() {
 	local force=0
@@ -119,6 +163,9 @@ backup_jail() {
 	fi
 	local name="$1"
 	local backup_path="$2"
+	shift
+	shift
+	local backup_filters="$@"
 	local jail_path="${jail_base_path}/${name}"
 	local jl="${#jail_path}"
 	jl=$((jl+1))
@@ -163,29 +210,11 @@ backup_jail() {
 		do
 			local basepath=$( echo "$path" | cut -c "$jl"- )
 			local basedir=$( dirname "$basepath" )
-			local basename=$( basename "$basepath" )
 
-			# exclude /tmp /var/run /var/tmp *.pid files
-			if [ "${#basepath}" -ge 4 ]; then
-				echo "$basepath" | grep -Eq '^/tmp(/.*)?$' && {
-					echo "Ignore $basepath"
-					continue
-				}
-			fi
-			if [ "${#basepath}" -ge 8 ]; then
-				echo "$basepath" | grep -Eq '^/var/run(/.*)?$' && {
-					echo "Ignore $basepath"
-					continue
-				}
-				echo "$basepath" | grep -Eq '^/var/tmp(/.*)?$' && {
-					echo "Ignore $basepath"
-					continue
-				}
-			fi
-			if [ "${basename##*.}" = "pid" ]; then
+			filter_backups "$basepath" $backup_filters || {
 				echo "Ignore $basepath"
 				continue
-			fi
+			}
 
 			if [ "$mode" = "M" -o "$mode" = "+" ]; then
 				if [ -f "$path" -o -L "$path" ]; then
