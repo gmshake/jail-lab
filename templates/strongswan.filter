@@ -2,7 +2,14 @@
 
 path="$1"
 
-echo "$path" | grep -Eq '^/usr/local/etc(/.*)?$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/ipsec\.conf$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/ipsec\.secrets$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/ipsec\.d(/.*)?$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/strongswan\.conf$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/strongswan\.d/.*\.sample$' && exit 1
+echo "$path" | grep -Eq '^/usr/local/etc/strongswan\.d(/.*)?$' && exit 0
+echo "$path" | grep -Eq '^/usr/local/etc/swanctl/.*\.sample$' && exit 1
+echo "$path" | grep -Eq '^/usr/local/etc/swanctl(/.*)?$' && exit 0
 echo "$path" | grep -Eq '^/etc/rc\.conf$' && exit 0
 
 # filter out others
