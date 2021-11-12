@@ -8,8 +8,8 @@ create_epair() {
 	local pairb=$2
 
 	local edge=$( ifconfig epair create )
-	ifconfig $edge name ${paira}.${pairb} > /dev/null && {
-		ifconfig ${edge%a}b name ${pairb}.${paira} > /dev/null || ifconfig ${edge%a}b destroy
+	ifconfig $edge name ${paira}.${pairb} descr ${pairb} > /dev/null && {
+		ifconfig ${edge%a}b name ${pairb}.${paira} descr ${paira} > /dev/null || ifconfig ${edge%a}b destroy
 	} || ifconfig $edge destroy
 }
 
