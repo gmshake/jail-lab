@@ -20,6 +20,8 @@ usage() {
 	echo -e "        host-freeradius3:\tFreeBSD-13.0-RELEASE-freeradius3"
 	echo -e "        host-isc-dhcp44-server:\tFreeBSD-13.0-RELEASE-isc-dhcp44-server"
 	echo -e "        host-unbound:\tFreeBSD-13.0-RELEASE-unbound"
+	echo -e "        host-iperf3:\tFreeBSD-13.0-RELEASE-iperf3"
+	echo -e "        host-netperf:\tFreeBSD-13.0-RELEASE-netperf"
 }
 
 create_baseos() {
@@ -81,6 +83,16 @@ create_host_unbound () {
 	create_template unbound.cb ${baseos}-unbound ${baseos}-host
 }
 
+create_host_iperf3() {
+	create_host
+	create_template iperf3.cb ${baseos}-iperf3 ${baseos}-host
+}
+
+create_host_netperf() {
+	create_host
+	create_template netperf.cb ${baseos}-netperf ${baseos}-host
+}
+
 if [ "$#" -eq 0 ]; then
 	usage
 	exit 1
@@ -113,6 +125,10 @@ do
 	host-isc-dhcp44-server)
 		;;
 	host-unbound)
+		;;
+	host-iperf3)
+		;;
+	host-netperf)
 		;;
 	-h)
 		usage
