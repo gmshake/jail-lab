@@ -1,9 +1,0 @@
-#!/bin/sh
-
-path="$1"
-
-echo "$path" | grep -Eq '^/etc/ppp/ppp\.conf$' && exit 0
-echo "$path" | grep -Eq '^/etc/rc\.conf$' && exit 0
-
-# filter out others
-exit 1
