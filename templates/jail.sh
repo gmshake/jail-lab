@@ -1,12 +1,13 @@
 #!/bin/sh
 
 . ../templates/jail.subr
+. ../templates/modules.subr
 
 
 pgm="${0##*/}" # Program basename
 
 usage() {
-	echo "Usage: $pgm [prepare] [backup] [restore]"
+	echo "Usage: $pgm [prepare] [backup] [restore] [refmodules] [unrefmodules]"
 	exit 1
 }
 
@@ -22,6 +23,12 @@ backup)
 	;;
 restore)
 	restore_jail $@
+	;;
+refmodules)
+	ref_modules $@
+	;;
+unrefmodules)
+	unref_modules $@
 	;;
 *) usage # NOTREACHED
 esac

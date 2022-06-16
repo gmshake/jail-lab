@@ -1,0 +1,85 @@
+#!/bin/sh
+
+# limitations:
+# if modules is loaded by this and later referenced by host, then it will troubles host when unload the modules
+# to workaround this issue, load the modules before this script
+
+modules_config="/var/run/modules.conf"
+
+[ -w "$modules_config" ] || touch "$modules_config"
+
+get_module_refcount() {
+	local key=$1
+	local value=0
+	#local kv=$( grep $key $modules_config )
+	local kv=$( sed -nE "/^${key}=[0-9]+$/p" $modules_config )
+	if [ -n "$kv" ]; then
+		value=${kv#*=}
+	fi
+	echo $value
+}
+
+set_module_refcount() {
+	local name=$1
+	local count=$2
+
+	if grep -q $name $modules_config
+	then
+		sed -i '' -E "s/${name}=[0-9]+/${name}=${count}/" $modules_config
+	else
+		echo "$name=$count" >> $modules_config
+	fi
+}
+
+ref_module() {
+	local name=$1
+	local refcount=$( get_module_refcount "$name" )
+
+	if kldstat -qn $name ; then
+		# module if referenced by other modules / parts
+		[ "$refcount" -eq 0 ] && {
+			refcount=$( bc -e "$refcount + 1")
+		}
+	else
+		if [ "$refcount" -gt 0 ]; then
+			echo "module $name is not loaded but the refcount is ${refcount}, abort!"
+			exit 1
+		fi
+		kldload $name
+	fi
+
+	refcount=$( bc -e "$refcount + 1")
+	set_module_refcount $name $refcount
+}
+
+unref_module() {
+	local name=$1
+	local refcount=$( get_module_refcount "$name" )
+
+	if [ "$refcount" -eq 0 ]; then
+		echo "module $name refcount is 0, abort"
+		exit 1
+	fi
+
+	if [ "$refcount" -eq 1 ]; then
+		kldunload "$name"
+	fi
+
+	refcount=$( bc -e "$refcount - 1")
+	set_module_refcount $name $refcount
+}
+
+ref_modules() {
+	for name in "$@"
+	do
+		ref_module "$name"
+	done
+}
+
+unref_modules() {
+	for name in "$@"
+	do
+		unref_module "$name"
+	done
+}
+
