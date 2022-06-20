@@ -139,7 +139,7 @@ filter_backups() {
 		for filter in $filters
 		do
 			# inclusive filter
-			./"$filter" "$path" && break
+			"$filter" "$path" && break
 		done
 	else
 		default_filter "$path"
