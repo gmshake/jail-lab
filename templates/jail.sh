@@ -7,7 +7,7 @@
 pgm="${0##*/}" # Program basename
 
 usage() {
-	echo "Usage: $pgm [prepare] [backup] [restore] [refmodules] [unrefmodules]"
+	echo "Usage: $pgm [prepare] [backup] [restore] [refmodules] [unrefmodules] [refmodules_force]"
 	exit 1
 }
 
@@ -29,6 +29,9 @@ refmodules)
 	;;
 unrefmodules)
 	unref_modules $@
+	;;
+refmodules_force)
+	ref_modules_force $@
 	;;
 *) usage # NOTREACHED
 esac

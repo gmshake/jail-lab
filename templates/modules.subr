@@ -83,3 +83,9 @@ unref_modules() {
 	done
 }
 
+ref_modules_force() {
+	for name in "$@"
+	do
+		kldstat -qn $name || kldload $name
+	done
+}
