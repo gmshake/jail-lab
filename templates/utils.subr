@@ -31,3 +31,17 @@ append_string_set() {
 	fi
 }
 
+reverse_strings() {
+	local arr="$@"
+	local rval
+	local s
+	for s in $arr
+	do
+		if [ -n "$rval" ]; then
+			rval="${s} ${rval}"
+		else
+			rval="$s"
+		fi
+	done
+	echo "$rval"
+}
