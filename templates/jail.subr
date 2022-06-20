@@ -276,3 +276,9 @@ restore_jail() {
 	return 0
 }
 
+# check if a jail is running
+# return 0 on running
+# none-zero otherwise
+is_running() {
+	jls -j $1 > /dev/null 2>&1
+}
