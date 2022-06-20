@@ -282,3 +282,37 @@ restore_jail() {
 is_running() {
 	jls -j $1 > /dev/null 2>&1
 }
+
+# filter out stopped jails
+# return a list of jails that are running
+filter_running_jails() {
+	local js="$@"
+	local rval=""
+	local name
+
+	for name in $js
+	do
+		if is_running $name ; then
+			# running jails
+			rval=$( append_string "$rval" "$name" )
+		fi
+	done
+	echo "$rval"
+}
+
+# filter out running jails
+# return a list of jails that are not running
+filter_stopped_jails() {
+	local js="$@"
+	local rval=""
+	local name
+
+	for name in $js
+	do
+		if ! is_running $name ; then
+			# stopped jails
+			rval=$( append_string "$rval" "$name" )
+		fi
+	done
+	echo "$rval"
+}
