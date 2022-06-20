@@ -47,7 +47,7 @@ create_template() {
 			}
 		fi
 
-		./"$callback" "$path" && zfs snap ${jail_pool}${path}@p0 || zfs destroy ${jail_pool}${path}
+		"$callback" "$path" && zfs snap ${jail_pool}${path}@p0 || zfs destroy ${jail_pool}${path}
 	}
 }
 

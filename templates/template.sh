@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. template.subr
+. TEMPLATE_PREFIX/etc/templates/template.subr
 
 pgm="${0##*/}"
 baseos="FreeBSD-13.0-RELEASE"
@@ -25,72 +25,72 @@ usage() {
 }
 
 create_baseos() {
-	create_template baseos.cb ${baseos}
+	create_template TEMPLATE_PREFIX/share/templates/baseos.cb ${baseos}
 }
 
 create_host() {
 	create_baseos
-	create_template host.cb ${baseos}-host ${baseos}
+	create_template TEMPLATE_PREFIX/share/templates/host.cb ${baseos}-host ${baseos}
 }
 
 create_router() {
 	create_baseos
-	create_template router.cb ${baseos}-router ${baseos}
+	create_template TEMPLATE_PREFIX/share/templates/router.cb ${baseos}-router ${baseos}
 }
 
 create_firewall() {
 	create_router
-	create_template pf.cb ${baseos}-firewall ${baseos}-router
+	create_template TEMPLATE_PREFIX/share/templates/pf.cb ${baseos}-firewall ${baseos}-router
 }
 
 create_router_frr7() {
 	create_router
-	create_template frr7.cb ${baseos}-router-frr7 ${baseos}-router
+	create_template TEMPLATE_PREFIX/share/templates/frr7.cb ${baseos}-router-frr7 ${baseos}-router
 }
 
 create_firewall_frr7() {
 	create_firewall
-	create_template frr7.cb ${baseos}-firewall-frr7 ${baseos}-firewall
+	create_template TEMPLATE_PREFIX/share/templates/frr7.cb ${baseos}-firewall-frr7 ${baseos}-firewall
 }
 
 create_firewall_frr7_access() {
 	create_firewall_frr7
-	create_template access-edge.cb ${baseos}-firewall-frr7-access ${baseos}-firewall-frr7
+	create_template TEMPLATE_PREFIX/share/templates/access-edge.cb ${baseos}-firewall-frr7-access ${baseos}-firewall-frr7
 }
 
 create_firewall_frr7_mpd5() {
 	create_firewall_frr7
-	create_template mpd5.cb ${baseos}-firewall-frr7-mpd5 ${baseos}-firewall-frr7
+	create_template TEMPLATE_PREFIX/share/templates/mpd5.cb ${baseos}-firewall-frr7-mpd5 ${baseos}-firewall-frr7
 }
 
 create_firewall_frr7_strongswan() {
 	create_firewall_frr7
-	create_template strongswan.cb ${baseos}-firewall-frr7-strongswan ${baseos}-firewall-frr7
+	create_template TEMPLATE_PREFIX/share/templates/strongswan.cb ${baseos}-firewall-frr7-strongswan ${baseos}-firewall-frr7
 }
 
 create_host_freeradius3() {
 	create_baseos
-	create_template freeradius3.cb ${baseos}-freeradius3 ${baseos}-host
+	create_template TEMPLATE_PREFIX/share/templates/freeradius3.cb ${baseos}-freeradius3 ${baseos}-host
 }
 
 create_host_isc_dhcp44_server() {
 	create_baseos
-	create_template isc-dhcp44-server.cb ${baseos}-isc-dhcp44-server ${baseos}-host
+	create_template TEMPLATE_PREFIX/share/templates/isc-dhcp44-server.cb ${baseos}-isc-dhcp44-server ${baseos}-host
 }
 
 create_host_unbound () {
 	create_baseos
-	create_template unbound.cb ${baseos}-unbound ${baseos}-host
+	create_template TEMPLATE_PREFIX/share/templates/unbound.cb ${baseos}-unbound ${baseos}-host
 }
 
 create_host_iperf3() {
 	create_host
-	create_template iperf3.cb ${baseos}-iperf3 ${baseos}-host
+	create_template TEMPLATE_PREFIX/share/templates/iperf3.cb ${baseos}-iperf3 ${baseos}-host
 }
 
 create_host_netperf() {
 	create_host
-	create_template netperf.cb ${baseos}-netperf ${baseos}-host
+	create_template TEMPLATE_PREFIX/share/templates/netperf.cb ${baseos}-netperf ${baseos}-host
 }
 
 if [ "$#" -eq 0 ]; then

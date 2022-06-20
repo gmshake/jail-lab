@@ -1,7 +1,5 @@
 #!/bin/sh
 
-. ../templates/template.subr
-
 
 create_epair() {
 	local paira=$1
@@ -18,4 +16,3 @@ destroy_epair() {
 	local pairb=$2
 	ifconfig ${paira}.${pairb} destroy
 }
-

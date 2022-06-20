@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. ../templates/template.subr
+. TEMPLATE_PREFIX/etc/templates/template.subr
 
 
 prepare_jail() {

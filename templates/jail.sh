@@ -1,7 +1,7 @@
 #!/bin/sh
 
-. ../templates/jail.subr
-. ../templates/modules.subr
+. TEMPLATE_PREFIX/etc/templates/jail.subr
+. TEMPLATE_PREFIX/etc/templates/modules.subr
 
 
 pgm="${0##*/}" # Program basename
