@@ -1,0 +1,33 @@
+#!/bin/sh
+
+append_string() {
+	local s="$1"
+	local a="$2"
+
+	if [ -n "$s" ]; then
+		echo "${s} ${a}"
+	else
+		echo "${a}"
+	fi
+}
+
+
+append_string_set() {
+	local s="$1"
+	local a="$2"
+
+	if [ -n "$s" ]; then
+		local _x
+		for _x in $s
+		do
+			if [ "$_x" == "$a" ]; then
+				echo "$s"
+				return
+			fi
+		done
+		echo "${s} ${a}"
+	else
+		echo "$a"
+	fi
+}
+
