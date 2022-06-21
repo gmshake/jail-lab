@@ -16,3 +16,34 @@ destroy_epair() {
 	local pairb=$2
 	ifconfig ${paira}.${pairb} destroy
 }
+
+
+setup_required_networks() {
+	local nets="$@"
+	local pair
+
+	for pair in $nets
+	do
+		local l="${pair%-*}"
+		local r="${pair#*-}"
+		ifconfig "${l}.${r}" > /dev/null 2>&1 || ifconfig "${r}.${l}" > /dev/null 2>&1 || {
+			echo "setup network $pair ..."
+			create_epair "$l" "$r"
+		}
+	done
+}
+
+teardown_stopped_networks() {
+	local nets="$@"
+	local pair
+
+	for pair in $nets
+	do
+		local l="${pair%-*}"
+		local r="${pair#*-}"
+		ifconfig "${l}.${r}" > /dev/null 2>&1 && ifconfig "${r}.${l}" > /dev/null 2>&1 && {
+			echo "teardown network $pair ..."
+			destroy_epair "$l" "$r"
+		}
+	done
+}
