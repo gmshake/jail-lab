@@ -10,5 +10,5 @@ install:
 	sed s:TEMPLATE_PREFIX:${PREFIX}: jail.subr > ${DST}/etc/templates/jail.subr
 	sed s:TEMPLATE_PREFIX:${PREFIX}: jail.sh > ${DST}/bin/jail-admin
 	chmod 755 ${DST}/etc/templates/*.subr
-	chmod 755 ${DST}/bin/jail-template ${DST}/bin/jail-admin
+	chmod 755 ${DST}/bin/jail-admin
 
