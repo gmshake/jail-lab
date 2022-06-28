@@ -92,6 +92,7 @@ create_template() {
 		umount ${tmpdir}
 		rmdir ${tmpdir}
 		if [ $rval -eq 0 ]; then
+			zfs set readonly=on ${dataset}
 			zfs snap ${dataset}@p0
 			rval=$?
 		fi
