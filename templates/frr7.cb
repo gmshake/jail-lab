@@ -1,34 +1,33 @@
 #!/bin/sh
 
-error=1
-trap 'error=255' INT
+trap 'exit 255' INT
 
-prepare_frr7() {
-	local path=$1
-	[ -d "$path" ] && {
-		cp /etc/resolv.conf ${path}/etc && {
-			mount -t devfs devfs ${path}/dev && {
-				mkdir ${path}/var/cache/pkg
-				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
-					pkg -c $path install -qy frr7 && {
-						sysrc -R $path frr_enable=YES
-						sysrc -R $path frr_vtysh_boot=YES
-						sysrc -R $path frr_daemons="zebra staticd bgpd ripd ripngd"
-						sysrc -R $path frr_flags="-P0"
-						touch ${path}/usr/local/etc/frr/vtysh.conf
-						touch ${path}/usr/local/etc/frr/frr.conf
-						error=0
-					}
-					umount ${path}/var/cache/pkg
-				}
-				rmdir ${path}/var/cache/pkg
-				umount ${path}/dev
-			}
-			rm ${path}/etc/resolv.conf
-		}
+build() {
+	local rootfs=$1
+	pkg -c "$rootfs" install -qy frr7 && {
+		sysrc -R "$rootfs" frr_enable=YES
+		sysrc -R "$rootfs" frr_vtysh_boot=YES
+		sysrc -R "$rootfs" frr_daemons="zebra staticd bgpd ripd ripngd"
+		sysrc -R "$rootfs" frr_flags="-P0"
+		touch "${rootfs}/usr/local/etc/frr/vtysh.conf"
+		touch "${rootfs}/usr/local/etc/frr/frr.conf"
 	}
 }
 
-prepare_frr7 $1
+action=$1
+shift
 
-exit "$error"
+case $action in
+template)
+	echo "FreeBSD-13.1-router"
+	;;
+pkg_cache|devfs|dns)
+	true
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac

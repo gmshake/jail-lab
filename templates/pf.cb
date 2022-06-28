@@ -1,18 +1,28 @@
 #!/bin/sh
 
-error=1
-trap 'error=255' INT
+trap 'exit 255' INT
 
-prepare_pf() {
-	local path=$1
+build() {
+	local rootfs=$1
 
-	[ -d "$path" ] && {
-		sysrc -R $path pf_enable=YES
-		touch ${path}/etc/pf.conf
-		error=0
-	}
+	sysrc -R "$rootfs" pf_enable=YES
+	touch "${rootfs}/etc/pf.conf"
 }
 
-prepare_pf $1
+action=$1
+shift
 
-exit "$error"
+case $action in
+template)
+	echo "FreeBSD-13.1-router"
+	;;
+devfs)
+	true
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac

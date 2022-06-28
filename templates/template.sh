@@ -3,7 +3,7 @@
 . TEMPLATE_PREFIX/etc/templates/template.subr
 
 pgm="${0##*/}"
-baseos="FreeBSD-13.0-RELEASE"
+baseos="FreeBSD-13.1"
 
 usage() {
 	echo -e "Usage: $pgm [-h] [template1] [template2] ... [template n]"

@@ -1,29 +1,28 @@
 #!/bin/sh
 
-error=1
-trap 'error=255' INT
+trap 'exit 255' INT
 
-prepare_unbound() {
-	local path=$1
-	[ -d "$path" ] && {
-		cp /etc/resolv.conf ${path}/etc && {
-			mount -t devfs devfs ${path}/dev && {
-				mkdir ${path}/var/cache/pkg
-				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
-					pkg -c $path install -qy unbound && {
-						sysrc -R $path unbound_enable=YES
-						error=0
-					}
-					umount ${path}/var/cache/pkg
-				}
-				rmdir ${path}/var/cache/pkg
-				umount ${path}/dev
-			}
-			rm ${path}/etc/resolv.conf
-		}
+build() {
+	local rootfs=$1
+	pkg -c "$rootfs" install -qy unbound && {
+		sysrc -R "$rootfs" unbound_enable=YES
 	}
 }
 
-prepare_unbound $1
+action=$1
+shift
 
-exit "$error"
+case $action in
+template)
+	echo "FreeBSD-13.1-host"
+	;;
+pkg_cache|devfs|dns)
+	true
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac

@@ -2,30 +2,50 @@
 
 . TEMPLATE_PREFIX/etc/templates/template.subr
 
+: ${jail_containers_dir:=jails}
+: ${jail_base_path:=/jails}
+
+jail_containers_dataset="${jail_pool}/${jail_containers_dir}"
+
+
+prepare_containers_dataset() {
+	zfs list ${jail_containers_dataset} > /dev/null 2>&1 || {
+		zfs create -o mountpoint=legacy ${jail_containers_dataset} || {
+			echo "Error create zfs dataset ${jail_containers_dataset}, abort!"
+			exit 1
+		}
+	}
+}
 
 prepare_jail() {
 	local name=$1
 	local template=$2
+	local template_dataset="${jail_templates_dataset}/${template}"
+	local dataset="${jail_containers_dataset}/${name}"
 	local path="$jail_base_path/$name"
 
 	[ -d "$path" ] && exit 1
 
-	zfs list -t snap ${jail_pool}${jail_base_templates_path}/${template}@p0 > /dev/null || {
-		echo "No template found, please prepare template ${jail_pool}${jail_base_templates_path}/${template}@p0 first, abort!"
+	mkdir -p "${path}"
+
+	zfs list -t snap ${template_dataset}@p0 > /dev/null || {
+		echo "No template found, please prepare template ${template_dataset}@p0 first, abort!"
 		exit 1
 	}
-	zfs clone ${jail_pool}${jail_base_templates_path}/${template}@p0 ${jail_pool}${path} || {
+	zfs clone ${template_dataset}@p0 ${dataset} || {
 		echo "Error prepare jail $name, abort!"
 		exit 1
 	}
-	zfs snap ${jail_pool}${path}@p0
+	zfs snap ${dataset}@p0
+	mount -t zfs ${dataset} "${path}"
 }
 
 clean_jail() {
 	local name=$1
+	local dataset="${jail_containers_dataset}/${name}"
 	local path="$jail_base_path/$name"
 
-	[ -d "$path" ] && zfs destroy -r ${jail_pool}${path}
+	[ -d "$path" ] && zfs destroy -r ${dataset}
 }
 
 create_jail() {
@@ -153,6 +173,7 @@ backup_jail() {
 		shift
 	fi
 	local name="$1"
+	local dataset="${jail_containers_dataset}/${name}"
 	local backup_path="$2"
 	shift
 	shift
@@ -196,7 +217,7 @@ backup_jail() {
 		fi
 	fi
 
-	zfs diff ${jail_pool}${jail_path}@p0 | {
+	zfs diff ${dataset}@p0 | {
 		while IFS='	' read -r mode path
 		do
 			local basepath=$( echo "$path" | cut -c "$jl"- )

@@ -1,19 +1,29 @@
 #!/bin/sh
 
-error=1
-trap 'error=255' INT
+trap 'exit 255' INT
 
-prepare_host() {
-	local path=$1
+build() {
+	local rootfs=$1
 
-	[ -d "$path" ] && {
-		sysrc -R $path cron_enable=NO
-		sysrc -R $path sendmail_enable=NONE
-		sysrc -R $path syslogd_flags="-ss"
-		error=0
-	}
+	sysrc -R "$rootfs" cron_enable=NO
+	sysrc -R "$rootfs" sendmail_enable=NONE
+	sysrc -R "$rootfs" syslogd_flags="-ss"
 }
 
-prepare_host $1
+action=$1
+shift
 
-exit "$error"
+case $action in
+template)
+	echo "FreeBSD-13.1"
+	;;
+devfs)
+	true
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac

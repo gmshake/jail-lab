@@ -1,33 +1,32 @@
 #!/bin/sh
 
-error=1
-trap 'error=255' INT
+trap 'exit 255' INT
 
-prepare_isc_dhcp44_server() {
-	local path=$1
-	[ -d "$path" ] && {
-		cp /etc/resolv.conf ${path}/etc && {
-			mount -t devfs devfs ${path}/dev && {
-				mkdir ${path}/var/cache/pkg
-				mount -t nullfs /var/cache/pkg ${path}/var/cache/pkg && {
-					pkg -c $path install -qy isc-dhcp44-server && {
-						sysrc -R $path dhcpd_enable=YES
-						sysrc -R $path dhcpd_flags="-q"
-						sysrc -R $path dhcpd_conf="/usr/local/etc/dhcpd.conf"
-						sysrc -R $path dhcpd_ifaces=en0
-						sysrc -R $path dhcpd_withumask=022
-						error=0
-					}
-					umount ${path}/var/cache/pkg
-				}
-				rmdir ${path}/var/cache/pkg
-				umount ${path}/dev
-			}
-			rm ${path}/etc/resolv.conf
-		}
+build() {
+	local rootfs=$1
+	pkg -c "$rootfs" install -qy isc-dhcp44-server && {
+		sysrc -R "$rootfs" dhcpd_enable=YES
+		sysrc -R "$rootfs" dhcpd_flags="-q"
+		sysrc -R "$rootfs" dhcpd_conf="/usr/local/etc/dhcpd.conf"
+		sysrc -R "$rootfs" dhcpd_ifaces=en0
+		sysrc -R "$rootfs" dhcpd_withumask=022
 	}
 }
 
-prepare_isc_dhcp44_server $1
+action=$1
+shift
 
-exit "$error"
+case $action in
+template)
+	echo "FreeBSD-13.1-host"
+	;;
+pkg_cache|devfs|dns)
+	true
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac
