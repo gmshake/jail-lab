@@ -1,0 +1,24 @@
+#!/bin/sh
+
+trap 'exit 255' INT
+
+build() {
+	local rootfs=$1
+
+	tar -xf /root/base.txz -C "$rootfs"
+}
+
+action=$1
+shift
+
+case $action in
+template)
+	echo ""
+	;;
+build)
+	build "$@"
+	;;
+*)
+	false
+	;;
+esac

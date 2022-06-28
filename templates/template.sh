@@ -22,6 +22,11 @@ usage() {
 	echo -e "        host-unbound:\t${baseos}-unbound"
 	echo -e "        host-iperf3:\t${baseos}-iperf3"
 	echo -e "        host-netperf:\t${baseos}-netperf"
+	echo -e "    $pgm localbaseos NAME"
+}
+
+create_localbaseos() {
+	create_template TEMPLATE_PREFIX/share/templates/localbaseos.cb $1
 }
 
 create_baseos() {
@@ -102,6 +107,11 @@ fi
 for tp in "$@"
 do
 	case "$tp" in
+	localbaseos)
+		shift
+		create_localbaseos "$@"
+		exit $?
+		;;
 	baseos)
 		;;
 	host)
