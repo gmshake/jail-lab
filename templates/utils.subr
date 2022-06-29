@@ -1,11 +1,13 @@
 #!/bin/sh
 
 append_string() {
-	local s="$1"
-	local a="$2"
+	local s=$1
+	local a=$2
+	local p=$3
+	p=${p:= }
 
 	if [ -n "$s" ]; then
-		echo "${s} ${a}"
+		echo "${s}${p}${a}"
 	else
 		echo "${a}"
 	fi
@@ -13,8 +15,10 @@ append_string() {
 
 
 append_string_set() {
-	local s="$1"
-	local a="$2"
+	local s=$1
+	local a=$2
+	local p=$3
+	p=${p:= }
 
 	if [ -n "$s" ]; then
 		local _x
@@ -25,7 +29,7 @@ append_string_set() {
 				return
 			fi
 		done
-		echo "${s} ${a}"
+		echo "${s}${p}${a}"
 	else
 		echo "$a"
 	fi
