@@ -7,7 +7,7 @@
 pgm="${0##*/}" # Program basename
 
 usage() {
-	echo "Usage: $pgm [prepare] [backup] [restore] [refmodules] [unrefmodules] [refmodules_force]"
+	echo "Usage: $pgm [prepare] [teardown] [backup] [restore] [refmodules] [unrefmodules] [refmodules_force]"
 	exit 1
 }
 
@@ -17,6 +17,9 @@ shift
 case "$action" in
 prepare)
 	prepare_jail $@
+	;;
+teardown)
+	teardown_jail $@
 	;;
 backup)
 	backup_jail $@

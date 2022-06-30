@@ -4,6 +4,7 @@
 
 : ${jail_containers_dir:=jails}
 : ${jail_base_path:=/jails}
+: ${jail_container_rootfs:=rootfs}
 
 jail_containers_dataset="${jail_pool}/${jail_containers_dir}"
 
@@ -20,32 +21,52 @@ prepare_containers_dataset() {
 prepare_jail() {
 	local name=$1
 	local template=$2
+	local backup_path=$3
 	local template_dataset="${jail_templates_dataset}/${template}"
 	local dataset="${jail_containers_dataset}/${name}"
-	local path="$jail_base_path/$name"
+	local path="${jail_base_path}/${name}/${jail_container_rootfs}"
 
-	[ -d "$path" ] && exit 1
+	[ -d "$path" ] || mkdir -p "${path}"
 
-	mkdir -p "${path}"
+	if ! zfs list ${dataset} > /dev/null 2>&1 ; then
+		zfs list -t snap ${template_dataset}@p0 > /dev/null 2>&1 || {
+			echo "No template found, please prepare template ${template_dataset}@p0 first, abort!"
+			exit 1
+		}
+		zfs clone ${template_dataset}@p0 ${dataset} || {
+			echo "Error prepare jail $name, abort!"
+			exit 1
+		}
+		zfs snap ${dataset}@p0
 
-	zfs list -t snap ${template_dataset}@p0 > /dev/null || {
-		echo "No template found, please prepare template ${template_dataset}@p0 first, abort!"
-		exit 1
-	}
-	zfs clone ${template_dataset}@p0 ${dataset} || {
-		echo "Error prepare jail $name, abort!"
-		exit 1
-	}
-	zfs snap ${dataset}@p0
-	mount -t zfs ${dataset} "${path}"
+		mount -t zfs ${dataset} "${path}" && {
+			# try to restore backups
+			if [ -n "$backup_path" ]; then
+				restore_jail ${name} "${backup_path}"
+			fi
+		}
+	else
+		mount -t zfs ${dataset} "${path}"
+	fi
+}
+
+teardown_jail() {
+	local name=$1
+	local path="${jail_base_path}/${name}/${jail_container_rootfs}"
+
+	umount "${path}"
 }
 
 clean_jail() {
 	local name=$1
 	local dataset="${jail_containers_dataset}/${name}"
-	local path="$jail_base_path/$name"
+	local path="${jail_base_path}/${name}/${jail_container_rootfs}"
 
-	[ -d "$path" ] && zfs destroy -r ${dataset}
+	[ -d "$path" ] && {
+		zfs destroy -r ${dataset}
+		rmdir "$path"
+		rmdir "${jail_base_path}/${name}"
+	}
 }
 
 create_jail() {
@@ -178,7 +199,7 @@ backup_jail() {
 	shift
 	shift
 	local backup_filters="$@"
-	local jail_path="${jail_base_path}/${name}"
+	local jail_path="${jail_base_path}/${name}/${jail_container_rootfs}"
 	local jl="${#jail_path}"
 	jl=$((jl+1))
 
@@ -253,7 +274,7 @@ backup_jail() {
 restore_jail() {
 	local name="$1"
 	local backup_path="$2"
-	local jail_path="${jail_base_path}/${name}"
+	local jail_path="${jail_base_path}/${name}/${jail_container_rootfs}"
 
 	if [ -z "$name" ]; then
 		echo "Jail name required, abort!"
