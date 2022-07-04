@@ -43,7 +43,7 @@ prepare_jail() {
 
 		mount -t zfs ${dataset} "${path}" && {
 			# try to restore backups
-			if [ -n "$backup_path" ]; then
+			if [ -d "$backup_path" ]; then
 				restore_jail ${name} "${backup_path}"
 			fi
 		}
