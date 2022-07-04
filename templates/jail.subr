@@ -33,6 +33,8 @@ prepare_jail() {
 			echo "No template found, please prepare template ${template_dataset}@p0 first, abort!"
 			exit 1
 		}
+		prepare_containers_dataset
+
 		zfs clone ${template_dataset}@p0 ${dataset} || {
 			echo "Error prepare jail $name, abort!"
 			exit 1
