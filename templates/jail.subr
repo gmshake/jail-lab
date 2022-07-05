@@ -254,7 +254,7 @@ backup_jail() {
 			if [ "$mode" = "M" -o "$mode" = "+" ]; then
 				if [ -f "$path" -o -L "$path" ]; then
 					mkdir -p "${backup_path}/data${basedir}"
-					cp -p "$path" "${backup_path}/data${basedir}"
+					cp -a "$path" "${backup_path}/data${basedir}"
 					echo "$basepath" >> "${backup_path}/ADDED_FILES"
 				fi
 			else
@@ -313,7 +313,7 @@ restore_jail() {
 			do
 				local basedir=$( dirname "$path" )
 				mkdir -p "${jail_path}${basedir}"
-				cp -p "${backup_path}/data${path}" "${jail_path}${basedir}"
+				cp -a "${backup_path}/data${path}" "${jail_path}${basedir}"
 			done
 		}
 	fi
