@@ -320,14 +320,29 @@ restore_jail() {
 	return 0
 }
 
-# check if a jail is running
+
+# check a jail running status
 # return 0 on running
-# none-zero otherwise
-is_running() {
-	jls -j $1 > /dev/null 2>&1
+# return 1 on dying
+# return 2 on died
+jail_status() {
+	if jls -dj $1 > /dev/null 2>&1 ; then
+		if jls -j $1 > /dev/null 2>&1 ; then
+			return 0
+		else
+			return 1
+		fi
+	else
+		return 2
+	fi
 }
 
-# filter out stopped jails
+# check if a jail is running (not dying or died)
+# return 0 on running, none-zero otherwise
+is_running() {
+	jail_status $1
+}
+
 # return a list of jails that are running
 filter_running_jails() {
 	local js="$@"
@@ -344,8 +359,7 @@ filter_running_jails() {
 	echo "$rval"
 }
 
-# filter out running jails
-# return a list of jails that are not running
+# return a list of jails that are stopped
 filter_stopped_jails() {
 	local js="$@"
 	local rval=""
@@ -353,7 +367,8 @@ filter_stopped_jails() {
 
 	for name in $js
 	do
-		if ! is_running $name ; then
+		jail_status $name
+		if [ $? -eq 2 ] ; then
 			# stopped jails
 			rval=$( append_string "$rval" "$name" )
 		fi
