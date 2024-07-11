@@ -14,7 +14,7 @@ shift
 
 case $action in
 template)
-	echo "FreeBSD-13.1-router"
+	echo "FreeBSD-13.3-router"
 	;;
 devfs)
 	true

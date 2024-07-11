@@ -25,7 +25,7 @@ shift
 
 case $action in
 template)
-	echo "FreeBSD-13.1-firewall"
+	echo "FreeBSD-13.3-firewall"
 	;;
 pkg_cache|devfs|dns)
 	true

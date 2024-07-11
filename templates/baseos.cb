@@ -3,7 +3,7 @@
 trap 'exit 255' INT
 
 #ver="auto"
-ver="13.1-RELEASE"
+ver="13.3-RELEASE"
 
 check_kernel_version() {
 	if [ "$ver" = "auto" ]; then

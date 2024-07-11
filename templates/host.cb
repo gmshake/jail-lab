@@ -15,7 +15,7 @@ shift
 
 case $action in
 template)
-	echo "FreeBSD-13.1"
+	echo "FreeBSD-13.3"
 	;;
 devfs)
 	true

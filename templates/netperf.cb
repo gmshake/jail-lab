@@ -12,7 +12,7 @@ shift
 
 case $action in
 template)
-	echo "FreeBSD-13.1-host"
+	echo "FreeBSD-13.3-host"
 	;;
 pkg_cache|devfs|dns)
 	true
