@@ -9,6 +9,7 @@ build() {
 		sysrc -R "$rootfs" frr_vtysh_boot=YES
 		sysrc -R "$rootfs" frr_daemons="zebra staticd bgpd ripd ripngd"
 		sysrc -R "$rootfs" frr_flags="-P0"
+		mkdir -p "${rootfs}/usr/local/etc/frr/"
 		touch "${rootfs}/usr/local/etc/frr/vtysh.conf"
 		touch "${rootfs}/usr/local/etc/frr/frr.conf"
 	}
