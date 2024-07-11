@@ -12,11 +12,11 @@ usage() {
 	echo -e "        host:\t\t${baseos}-host"
 	echo -e "        router:\t\t${baseos}-router"
 	echo -e "        firewall:\t${baseos}-firewall (pf based)"
-	echo -e "        router-frr7:\t${baseos}-router-frr7"
-	echo -e "        firewall-frr7:\t${baseos}-firewall-frr7"
-	echo -e "        firewall-frr7-access:\t${baseos}-firewall-frr7-access"
-	echo -e "        firewall-frr7-mpd5:\t${baseos}-firewall-frr7-mpd5"
-	echo -e "        firewall-frr7-strongswan:\t${baseos}-firewall-frr7-strongswan"
+	echo -e "        router-frr:\t${baseos}-router-frr"
+	echo -e "        firewall-frr:\t${baseos}-firewall-frr"
+	echo -e "        firewall-frr-access:\t${baseos}-firewall-frr-access"
+	echo -e "        firewall-frr-mpd5:\t${baseos}-firewall-frr-mpd5"
+	echo -e "        firewall-frr-strongswan:\t${baseos}-firewall-frr-strongswan"
 	echo -e "        host-freeradius3:\t${baseos}-freeradius3"
 	echo -e "        host-isc-dhcp44-server:\t${baseos}-isc-dhcp44-server"
 	echo -e "        host-unbound:\t${baseos}-unbound"
@@ -48,29 +48,29 @@ create_firewall() {
 	create_template TEMPLATE_PREFIX/share/templates/pf.cb ${baseos}-firewall ${baseos}-router
 }
 
-create_router_frr7() {
+create_router_frr() {
 	create_router
-	create_template TEMPLATE_PREFIX/share/templates/frr7.cb ${baseos}-router-frr7 ${baseos}-router
+	create_template TEMPLATE_PREFIX/share/templates/frr.cb ${baseos}-router-frr ${baseos}-router
 }
 
-create_firewall_frr7() {
+create_firewall_frr() {
 	create_firewall
-	create_template TEMPLATE_PREFIX/share/templates/frr7.cb ${baseos}-firewall-frr7 ${baseos}-firewall
+	create_template TEMPLATE_PREFIX/share/templates/frr.cb ${baseos}-firewall-frr ${baseos}-firewall
 }
 
-create_firewall_frr7_access() {
-	create_firewall_frr7
-	create_template TEMPLATE_PREFIX/share/templates/access-edge.cb ${baseos}-firewall-frr7-access ${baseos}-firewall-frr7
+create_firewall_frr_access() {
+	create_firewall_frr
+	create_template TEMPLATE_PREFIX/share/templates/access-edge.cb ${baseos}-firewall-frr-access ${baseos}-firewall-frr
 }
 
-create_firewall_frr7_mpd5() {
-	create_firewall_frr7
-	create_template TEMPLATE_PREFIX/share/templates/mpd5.cb ${baseos}-firewall-frr7-mpd5 ${baseos}-firewall-frr7
+create_firewall_frr_mpd5() {
+	create_firewall_frr
+	create_template TEMPLATE_PREFIX/share/templates/mpd5.cb ${baseos}-firewall-frr-mpd5 ${baseos}-firewall-frr
 }
 
-create_firewall_frr7_strongswan() {
-	create_firewall_frr7
-	create_template TEMPLATE_PREFIX/share/templates/strongswan.cb ${baseos}-firewall-frr7-strongswan ${baseos}-firewall-frr7
+create_firewall_frr_strongswan() {
+	create_firewall_frr
+	create_template TEMPLATE_PREFIX/share/templates/strongswan.cb ${baseos}-firewall-frr-strongswan ${baseos}-firewall-frr
 }
 
 create_host_freeradius3() {
@@ -120,15 +120,15 @@ do
 		;;
 	firewall)
 		;;
-	router-frr7)
+	router-frr)
 		;;
-	firewall-frr7)
+	firewall-frr)
 		;;
-	firewall-frr7-access)
+	firewall-frr-access)
 		;;
-	firewall-frr7-mpd5)
+	firewall-frr-mpd5)
 		;;
-	firewall-frr7-strongswan)
+	firewall-frr-strongswan)
 		;;
 	host-freeradius3)
 		;;

@@ -4,7 +4,7 @@ trap 'exit 255' INT
 
 build() {
 	local rootfs=$1
-	pkg -c "$rootfs" install -qy frr7 && {
+	pkg -c "$rootfs" install -qy frr8 && {
 		sysrc -R "$rootfs" frr_enable=YES
 		sysrc -R "$rootfs" frr_vtysh_boot=YES
 		sysrc -R "$rootfs" frr_daemons="zebra staticd bgpd ripd ripngd"
