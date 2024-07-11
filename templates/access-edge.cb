@@ -5,17 +5,18 @@ trap 'exit 255' INT
 build() {
 	local rootfs=$1
 	pkg -c "$rootfs" install -qy isc-dhcp44-relay && {
+		sysrc -R "$rootfs" ipv6_activate_all_interfaces=NO
 		sysrc -R "$rootfs" dhcrelay_enable=YES
 		sysrc -R "$rootfs" dhcrelay_flags="-q"
 		sysrc -R "$rootfs" dhcrelay_servers=""
 		sysrc -R "$rootfs" dhcrelay_ifaces=en1
-		sysrc -R "$rootfs" dhcrelay6_enable=YES
+		sysrc -R "$rootfs" dhcrelay6_enable=NO
 		sysrc -R "$rootfs" dhcrelay6_flags=""
 		sysrc -R "$rootfs" dhcrelay6_servers=""
 		sysrc -R "$rootfs" dhcrelay6_ifaces=en1
 		sysrc -R "$rootfs" dhcrelay6_lowers="en1"
 		sysrc -R "$rootfs" dhcrelay6_uppers="en0"
-		sysrc -R "$rootfs" rtadvd_enable=YES
+		sysrc -R "$rootfs" rtadvd_enable=NO
 		sysrc -R "$rootfs" rtadvd_interfaces="en1"
 	}
 }
