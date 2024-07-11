@@ -10,7 +10,6 @@ build() {
 	sysrc -R "$rootfs" syslogd_flags="-ss"
 	sysrc -R "$rootfs" gateway_enable=YES
 	sysrc -R "$rootfs" ipv6_gateway_enable=YES
-	sysrc -R "$rootfs" ipv6_activate_all_interfaces=YES
 }
 
 action=$1
